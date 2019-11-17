@@ -13,8 +13,8 @@ export class ContactBookService {
     this.getContacts();
   }
 
-  public getContactById(contactId: string) {
-    return this.http.get(`https://agendaapp-6b8bf.firebaseio.com/contacts/${contactId}.json`);
+  public getContactById(id: string) {
+    return this.http.get(`https://agendaapp-6b8bf.firebaseio.com/contacts/${id}.json`);
   }
 
   public getContacts() {
