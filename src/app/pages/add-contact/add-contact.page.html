@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-item lines="none">
+      <a [routerLink]="['/contact-book']">
+        <ion-fab-button class="rs-black">
+          <ion-icon name="arrow-round-back"></ion-icon>
+        </ion-fab-button>
+      </a>
+      <ion-title class="rs-black">
+        Afegir Contacte
+      </ion-title>
+    </ion-item>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form #f="ngForm" (ngSubmit)="onSubmit(f)">
+    <ion-item>
+      <ion-input placeholder="Nom" name="name" type="text" ngModel required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input placeholder="Cognoms" name="lastName" type="text" ngModel required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input placeholder="Adreca electrònica" name="email" type="email" ngModel required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input placeholder="Adreca fısica" name="address" type="text" ngModel required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input placeholder="Telèfon fixe" name="telephone" type="tel" ngModel required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input placeholder="Telèfon mòbil" name="phone" type="tel" ngModel required></ion-input>
+    </ion-item>
+    <div class="rs-m0">
+      <ion-item lines="none">
+        <ion-button type="submit" block>Enviar</ion-button>
+        <ion-button type="button" (click)="cancelNewContact()" block>Cancelar</ion-button>
+      </ion-item>
+    </div>
+  </form>
+</ion-content>

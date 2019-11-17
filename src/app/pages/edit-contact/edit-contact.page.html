@@ -1,0 +1,53 @@
+<ion-header>
+  <div *ngIf="contact">
+    <ion-toolbar>
+      <ion-item lines="none">
+        <a [routerLink]="['/contact', contact.id]" routerLinkActive="router-link-active">
+          <ion-fab-button class="rs-black">
+            <ion-icon name="arrow-round-back"></ion-icon>
+          </ion-fab-button>
+        </a>
+        <ion-title>edit-contact</ion-title>
+      </ion-item>
+    </ion-toolbar>
+  </div>
+</ion-header>
+
+
+<ion-content>
+  <div *ngIf="contact">
+    <form #f="ngForm" (ngSubmit)="onSubmit(f)">
+      <ion-item>
+        <ion-input placeholder="Nom" name="name" type="text" [ngModel]="contact.name" required></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input [ngModel]="contact.lastName" placeholder="Cognoms" name="lastName" type="text" required>
+        </ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input [ngModel]="contact.email" placeholder="Adreca electrònica" name="email" type="email" required>
+        </ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input [ngModel]="contact.address" placeholder="Adreca fısica" name="address" type="text" required>
+        </ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input [ngModel]="contact.telephone" placeholder="Telèfon fixe" name="telephone" type="tel" required>
+        </ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input [ngModel]="contact.phone" placeholder="Telèfon mòbil" name="phone" type="tel" required>
+        </ion-input>
+      </ion-item>
+      <div class="rs-m0">
+        <ion-item lines="none">
+          <ion-button type="submit" block>Enviar</ion-button>
+          <a [routerLink]="['/contact', contact.id]" routerLinkActive="router-link-active">
+            <ion-button type="button" block>Cancelar</ion-button>
+          </a>
+        </ion-item>
+      </div>
+    </form>
+  </div>
+</ion-content>

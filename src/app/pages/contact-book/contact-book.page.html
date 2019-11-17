@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-item lines="none">
+      <ion-title>Llista de Contactes</ion-title>
+    </ion-item>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list lines="none">
+    <!-- <ion-item-divider>
+            <ion-label>A</ion-label>
+          </ion-item-divider>
+        
+          <ion-item>
+            <ion-label>Angola</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>Argentina</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>Armenia</ion-label>
+          </ion-item> -->
+
+    <a [routerLink]="['/contact/', contact.id]" routerLinkActive="router-link-active"
+      *ngFor="let contact of contactBookService.listContacts">
+      <ion-item>
+        <ion-icon slot="start" name="contact"></ion-icon>
+        <ion-label>
+          {{ contact.name }} {{ contact.lastName }}
+        </ion-label>
+      </ion-item>
+    </a>
+  </ion-list>
+  <div>
+    <a [routerLink]="['/add-contact']">
+      <ion-fab-button>
+        <ion-icon name="person-add"></ion-icon>
+      </ion-fab-button>
+    </a>
+  </div>
+</ion-content>
