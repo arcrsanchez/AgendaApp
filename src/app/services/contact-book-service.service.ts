@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ContactModel } from '../models/contact-model';
+import { ContactModel, ContactId, MapContactModel } from '../models/contact-model';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 export class ContactBookService {
 
   listContacts: ContactModel[] = [];
+  mapContacts: MapContactModel[] = [];
 
   constructor(private http: HttpClient) {
     this.getContacts();
@@ -28,16 +29,43 @@ export class ContactBookService {
             i++;
             this.listContacts.push(contact);
           });
+          this.groupContactsByLastNameFirstLetter();
         }
       });
+  }
+
+  private groupContactsByLastNameFirstLetter() {
+    this.listContacts.sort((a, b) => {
+      return a.lastName.localeCompare(b.lastName);
+    });
+    this.mapContacts = [];
+    for (const contact of this.listContacts) {
+      let containsFirstLetter = false;
+      const firstLetter = contact.lastName.substr(0, 1);
+      const mapContactAux = { firstLetter, contacts: [contact] };
+      if (this.mapContacts.length > 0) {
+        for (const mapContact of this.mapContacts) {
+          if (mapContact.firstLetter === mapContactAux.firstLetter) {
+            containsFirstLetter = true;
+            mapContact.contacts.push(contact);
+          }
+        }
+        if (!containsFirstLetter) {
+          this.mapContacts.push(mapContactAux);
+        }
+      } else {
+        this.mapContacts.push(mapContactAux);
+      }
+    }
   }
 
   public newContact(contact: ContactModel) {
     this.http.post('https://agendaapp-6b8bf.firebaseio.com/contacts.json', contact)
       .subscribe(
-        (id: string) => {
-          contact.id = id;
+        (id: ContactId) => {
+          contact.id = id.name;
           this.listContacts.push(contact);
+          this.groupContactsByLastNameFirstLetter();
         },
         response => {
           console.log('ERROR POST:', response);
@@ -45,19 +73,24 @@ export class ContactBookService {
   }
 
   public updateContact(id: string, contactUpdate: ContactModel) {
-    this.http.put(`https://agendaapp-6b8bf.firebaseio.com/contacts/${id}.json`, contactUpdate)
-      .subscribe(
-        () => {
-          for (const contact of this.listContacts) {
-            if (contact.id === id) {
-              contactUpdate.id = id;
-              this.listContacts.splice(this.listContacts.indexOf(contact), 1, contactUpdate);
+    return new Promise((resolve, reject) => {
+      this.http.put(`https://agendaapp-6b8bf.firebaseio.com/contacts/${id}.json`, contactUpdate)
+        .subscribe(() => {
+          setTimeout(() => {
+            for (const contact of this.listContacts) {
+              if (contact.id === id) {
+                contactUpdate.id = id;
+                this.listContacts.splice(this.listContacts.indexOf(contact), 1, contactUpdate);
+                this.groupContactsByLastNameFirstLetter();
+              }
             }
-          }
+            resolve(id);
+          }, 1000);
         },
-        response => {
-          console.log('ERROR PUT: ', response);
-        });
+          response => {
+            console.log('ERROR PUT: ', response);
+          });
+    });
   }
 
   public deleteContact(id: string) {
@@ -67,6 +100,7 @@ export class ContactBookService {
           for (const contact of this.listContacts) {
             if (contact.id === id) {
               this.listContacts.splice(this.listContacts.indexOf(contact), 1);
+              this.groupContactsByLastNameFirstLetter();
             }
           }
         });

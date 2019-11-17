@@ -19,8 +19,10 @@ export class EditContactPage implements OnInit {
 
   public onSubmit(f: NgForm) {
     if (f.valid) {
-      this.contactBookService.updateContact(this.contact.id, f.value);
-      this.router.navigate(['/contact', this.contact.id]);
+      this.contactBookService.updateContact(this.contact.id, f.value)
+        .then((id: string) => {
+          this.router.navigate(['/contact', id]);
+        });
     }
   }
 

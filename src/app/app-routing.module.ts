@@ -5,19 +5,19 @@ const routes: Routes = [
   { path: '', redirectTo: 'contact-book', pathMatch: 'full' },
   {
     path: 'contact-book',
-    loadChildren: () => import('./pages/contact-book/contact-book.module').then( m => m.ContactBookPageModule)
+    loadChildren: './pages/contact-book/contact-book.module#ContactBookPageModule'
   },
   {
     path: 'contact/:id',
-    loadChildren: () => import('./pages/contact/contact.module').then( m => m.ContactPageModule)
+    loadChildren: './pages/contact/contact.module#ContactPageModule'
   },
   {
     path: 'add-contact',
-    loadChildren: () => import('./pages/add-contact/add-contact.module').then( m => m.AddContactPageModule)
+    loadChildren: './pages/add-contact/add-contact.module#AddContactPageModule'
   },
   {
     path: 'edit-contact/:id',
-    loadChildren: () => import('./pages/edit-contact/edit-contact.module').then( m => m.EditContactPageModule)
+    loadChildren: './pages/edit-contact/edit-contact.module#EditContactPageModule'
   },
 ];
 
