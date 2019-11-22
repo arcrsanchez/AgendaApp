@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ContactModel, ContactId, MapContactModel } from '../models/contact-model';
+import { ContactModel, ContactId } from '../models/contact-model';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -7,102 +7,95 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ContactBookService {
 
-  listContacts: ContactModel[] = [];
-  mapContacts: MapContactModel[] = [];
+  mapContacts: Map<string, ContactModel[]>;
 
   constructor(private http: HttpClient) {
+    this.mapContacts = new Map<string, ContactModel[]>();
     this.getContacts();
   }
 
-  public getContactById(id: string) {
-    return this.http.get(`https://agendaapp-6b8bf.firebaseio.com/contacts/${id}.json`);
-  }
-
-  public getContacts() {
-    this.http.get('https://agendaapp-6b8bf.firebaseio.com/contacts.json')
-      .subscribe((res) => {
-        if (res !== null) {
-          let i = 0;
-          Object.keys(res).forEach((id: string) => {
-            const contact: ContactModel = Object.values(res)[i];
-            contact.id = id;
-            i++;
-            this.listContacts.push(contact);
-          });
-          this.groupContactsByLastNameFirstLetter();
-        }
-      });
-  }
-
-  private groupContactsByLastNameFirstLetter() {
-    this.listContacts.sort((a, b) => {
+  private groupContactsByLastNameFirstLetter(listContacts: ContactModel[]) {
+    listContacts.sort((a, b) => {
       return a.lastName.localeCompare(b.lastName);
     });
-    this.mapContacts = [];
-    for (const contact of this.listContacts) {
-      let containsFirstLetter = false;
+    let auxFirstLetter: string;
+    for (const contact of listContacts) {
       const firstLetter = contact.lastName.substr(0, 1);
-      const mapContactAux = { firstLetter, contacts: [contact] };
-      if (this.mapContacts.length > 0) {
-        for (const mapContact of this.mapContacts) {
-          if (mapContact.firstLetter === mapContactAux.firstLetter) {
-            containsFirstLetter = true;
-            mapContact.contacts.push(contact);
-          }
-        }
-        if (!containsFirstLetter) {
-          this.mapContacts.push(mapContactAux);
-        }
+      if (!this.mapContacts.has(firstLetter)) {
+        auxFirstLetter = firstLetter;
+        this.mapContacts.set(firstLetter, [contact]);
       } else {
-        this.mapContacts.push(mapContactAux);
+        this.mapContacts.get(auxFirstLetter).push(contact);
       }
     }
   }
 
-  public newContact(contact: ContactModel) {
-    this.http.post('https://agendaapp-6b8bf.firebaseio.com/contacts.json', contact)
-      .subscribe(
-        (id: ContactId) => {
-          contact.id = id.name;
-          this.listContacts.push(contact);
-          this.groupContactsByLastNameFirstLetter();
-        },
-        response => {
-          console.log('ERROR POST:', response);
-        });
+  public async getContactById(id: string) {
+    return await this.http.get<ContactModel>(`https://agendaapp-6b8bf.firebaseio.com/contacts/${id}.json`).toPromise();
   }
 
-  public updateContact(id: string, contactUpdate: ContactModel) {
-    return new Promise((resolve, reject) => {
-      this.http.put(`https://agendaapp-6b8bf.firebaseio.com/contacts/${id}.json`, contactUpdate)
-        .subscribe(() => {
-          setTimeout(() => {
-            for (const contact of this.listContacts) {
-              if (contact.id === id) {
-                contactUpdate.id = id;
-                this.listContacts.splice(this.listContacts.indexOf(contact), 1, contactUpdate);
-                this.groupContactsByLastNameFirstLetter();
-              }
-            }
-            resolve(id);
-          }, 1000);
-        },
-          response => {
-            console.log('ERROR PUT: ', response);
-          });
+  private async getContacts() {
+    const res = await this.http.get('https://agendaapp-6b8bf.firebaseio.com/contacts.json').toPromise();
+    let i = 0;
+    const listContacts: ContactModel[] = [];
+    Object.keys(res).forEach((id: string) => {
+      const contact: ContactModel = Object.values(res)[i];
+      contact.id = id;
+      i++;
+      listContacts.push(contact);
+    });
+    this.groupContactsByLastNameFirstLetter(listContacts);
+  }
+
+  public async newContact(contact: ContactModel) {
+    const id = await this.http.post<ContactId>('https://agendaapp-6b8bf.firebaseio.com/contacts.json', contact).toPromise();
+    contact.id = id.name;
+    const firstLetter = contact.lastName.substr(0, 1);
+    if (this.mapContacts.has(firstLetter)) {
+      this.mapContacts.get(firstLetter).push(contact);
+    } else {
+      this.mapContacts.set(firstLetter, [contact]);
+    }
+  }
+
+  public async updateContact(id: string, contactUpdate: ContactModel) {
+    await this.http.put<ContactModel>(`https://agendaapp-6b8bf.firebaseio.com/contacts/${id}.json`, contactUpdate).toPromise();
+    this.mapContacts.forEach((values) => {
+      const contact = values.find(value => value.id === id);
+      if (contact !== undefined) {
+        contactUpdate.id = id;
+        const firstLetter = contact.lastName.substr(0, 1);
+        if (contact.lastName === contactUpdate.lastName) {
+          this.mapContacts.get(firstLetter).splice(this.mapContacts.get(firstLetter).indexOf(contact), 1, contactUpdate);
+        } else {
+          const firstLetterUpdate = contactUpdate.lastName.substr(0, 1);
+          this.mapContacts.get(firstLetter).splice(this.mapContacts.get(firstLetter).indexOf(contact), 1);
+          if (this.mapContacts.get(firstLetter).length === 0) {
+            this.mapContacts.delete(firstLetter);
+          }
+          if (this.mapContacts.has(firstLetterUpdate)) {
+            this.mapContacts.get(firstLetterUpdate).push(contactUpdate);
+          } else {
+            this.mapContacts.set(firstLetterUpdate, [contactUpdate]);
+          }
+        }
+      }
+    });
+    return id;
+  }
+
+  public async deleteContact(id: string) {
+    await this.http.delete(`https://agendaapp-6b8bf.firebaseio.com/contacts/${id}.json`).toPromise();
+    this.mapContacts.forEach((values: ContactModel[]) => {
+      const contact = values.find(value => value.id === id);
+      if (contact !== undefined) {
+        const firstLetter = contact.lastName.substr(0, 1);
+        this.mapContacts.get(firstLetter).splice(this.mapContacts.get(firstLetter).indexOf(contact), 1);
+        if (this.mapContacts.get(firstLetter).length === 0) {
+          this.mapContacts.delete(firstLetter);
+        }
+      }
     });
   }
 
-  public deleteContact(id: string) {
-    this.http.delete(`https://agendaapp-6b8bf.firebaseio.com/contacts/${id}.json`)
-      .subscribe(
-        () => {
-          for (const contact of this.listContacts) {
-            if (contact.id === id) {
-              this.listContacts.splice(this.listContacts.indexOf(contact), 1);
-              this.groupContactsByLastNameFirstLetter();
-            }
-          }
-        });
-  }
 }

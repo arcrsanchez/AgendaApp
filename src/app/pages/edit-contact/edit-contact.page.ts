@@ -17,24 +17,23 @@ export class EditContactPage implements OnInit {
               public contactBookService: ContactBookService,
               private router: Router) { }
 
-  public onSubmit(f: NgForm) {
+  async onSubmit(f: NgForm) {
     if (f.valid) {
-      this.contactBookService.updateContact(this.contact.id, f.value)
-        .then((id: string) => {
-          this.router.navigate(['/contact', id]);
-        });
+      const contactId = await this.contactBookService.updateContact(this.contact.id, f.value);
+      this.router.navigate(['/contact', contactId]);
     }
   }
 
   ngOnInit() {
     this.route.params
       .subscribe(params => {
-        this.contactBookService.getContactById(params.id)
-          .subscribe((contact: ContactModel) => {
-            contact.id = params.id;
-            this.contact = contact;
-          });
+        this.getContact(params.id);
       });
+  }
+
+  async getContact(id: string) {
+    this.contact = await this.contactBookService.getContactById(id);
+    this.contact.id = id;
   }
 
 }

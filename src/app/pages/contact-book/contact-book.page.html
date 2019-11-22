@@ -8,12 +8,12 @@
 
 <ion-content>
   <ion-list lines="none">
-    <ion-item-group *ngFor="let mapContact of contactBookService.mapContacts">
+    <ion-item-group *ngFor="let mapContact of contactBookService.mapContacts | keyvalue">
       <ion-item-divider>
-        <ion-label> {{ mapContact.firstLetter }} </ion-label>
+        <ion-label> {{ mapContact.key }} </ion-label>
       </ion-item-divider>
       <a [routerLink]="['/contact/', contact.id]" routerLinkActive="router-link-active"
-        *ngFor="let contact of mapContact.contacts ">
+        *ngFor="let contact of mapContact.value ">
         <ion-item>
           <ion-icon slot="start" name="contact"></ion-icon>
           <ion-label>

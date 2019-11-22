@@ -21,32 +21,36 @@ export class ContactPage implements OnInit {
   ngOnInit() {
     this.route.params
       .subscribe(params => {
-        this.contactBookService.getContactById(params.id)
-          .subscribe((contact: ContactModel) => {
-            contact.id = params.id;
-            this.contact = contact;
-          });
+        this.getContact(params.id);
       });
   }
 
-  async deleteContact() {
+  async getContact(id: string) {
+    this.contact = await this.contactBookService.getContactById(id);
+    this.contact.id = id;
+  }
+
+  async deleteContactAlert() {
     const alert = await this.alertController.create({
       message: 'Segur que vols esborrar aquest contacte?',
       buttons: [
         {
           text: 'Si',
           handler: () => {
-            this.contactBookService.deleteContact(this.contact.id);
-            this.router.navigate(['/contact-book']);
+            this.deleteContact();
           }
         }, {
           text: 'No',
-          role: 'cancel',
-          cssClass: 'secondary'
+          role: 'cancel'
         }
       ]
     });
     await alert.present();
+  }
+
+  async deleteContact() {
+    await this.contactBookService.deleteContact(this.contact.id);
+    this.router.navigate(['/contact-book']);
   }
 
 }

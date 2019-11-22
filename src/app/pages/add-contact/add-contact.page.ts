@@ -15,9 +15,9 @@ export class AddContactPage implements OnInit {
               public alertController: AlertController,
               private router: Router) { }
 
-  public onSubmit(f: NgForm) {
+  public async onSubmit(f: NgForm) {
     if (f.valid) {
-      this.contactBookService.newContact(f.value);
+      await this.contactBookService.newContact(f.value);
       this.router.navigate(['/contact-book']);
     }
   }
@@ -33,8 +33,7 @@ export class AddContactPage implements OnInit {
           }
         }, {
           text: 'No',
-          role: 'cancel',
-          cssClass: 'secondary'
+          role: 'cancel'
         }
       ]
     });
