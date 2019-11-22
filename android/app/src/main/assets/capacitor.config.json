@@ -1,0 +1,9 @@
+{
+  "appId": "com.AgendaApp",
+  "appName": "AgendaApp2",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "cordova": {},
+  "linuxAndroidStudioPath": "/opt/android-studio/bin/studio.sh"
+}
